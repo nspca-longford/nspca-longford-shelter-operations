@@ -64,6 +64,43 @@ header .menu{background:var(--slate2);color:#cbd5e1;border:none;border-radius:9p
 .bar>div{height:100%;border-radius:20px;background:var(--lime)}
 .addfree{width:100%;background:var(--bg);border:1px dashed var(--bd);border-radius:11px;padding:11px;font-size:13px;font-weight:600;color:var(--sec);margin-bottom:11px}
 .empty{text-align:center;color:var(--muted);font-size:12px;padding:22px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px}
+.kpi{background:#fff;border:0.5px solid var(--bd);border-radius:14px;padding:13px 15px}
+.kpi .v{font-size:23px;font-weight:800;color:var(--slate);line-height:1.05}
+.kpi .l{font-size:11px;font-weight:600;color:var(--sec);margin-top:4px}
+.kpi .sub{font-size:10px;color:var(--muted);margin-top:2px}
+.dsec{margin-bottom:18px}
+.dhead{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin:0 2px 9px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:0.5px solid var(--bd);background:#fff;color:var(--sec);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600}
+.chip b{font-weight:800}
+.arow{display:flex;align-items:center;gap:9px;background:#fff;border:0.5px solid var(--bd);border-radius:12px;padding:10px 13px;margin-bottom:8px;cursor:pointer}
+.arow .an{font-size:13px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arow .aw{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap}
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.badge.med{background:#fee2e2;color:#991b1b}
+.badge.long{background:#f59e0b;color:#3b2500}
+.searchwrap{position:relative;margin-bottom:11px}
+.searchwrap input{width:100%;border:0.5px solid var(--bd);background:#fff;border-radius:11px;padding:10px 34px 10px 13px;font-size:13px;color:var(--slate);box-sizing:border-box}
+.searchwrap input:focus{outline:none;border-color:var(--lime)}
+.searchwrap #search-x{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:20px;color:var(--muted);padding:4px 8px;line-height:1;cursor:pointer}
+.readyrow{display:flex;align-items:center;gap:9px;margin-top:15px;font-size:13px;font-weight:600;color:var(--slate);cursor:pointer}
+.readyrow input{width:18px;height:18px;accent-color:#16a34a}
+.acard .readylbl{position:absolute;bottom:7px;right:7px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:6px;background:#16a34a;color:#fff}
+.acard .flags{font-size:10px;color:#16a34a;font-weight:700;margin-top:3px}
+.acard .medflag{font-size:10px;font-weight:700;margin-top:3px;color:#b45309}
+.acard .medflag.over{color:#991b1b}
+.medrow{display:flex;align-items:flex-start;gap:8px;background:var(--bg);border-radius:10px;padding:8px 11px;margin-bottom:7px}
+.medrow .medmain{flex:1;min-width:0;font-size:12px}
+.medrow .medt{font-weight:700;color:var(--slate)}
+.medrow .medd{color:var(--sec)}
+.medrow .meddate{font-size:10px;color:var(--muted);margin-top:2px}
+.meddue{font-size:10px;font-weight:700;color:#b45309;background:#fef3c7;padding:2px 7px;border-radius:6px;margin-left:4px;white-space:nowrap}
+.meddue.over{color:#991b1b;background:#fee2e2}
+.medx{background:none;border:none;color:var(--muted);font-size:18px;padding:0 4px;line-height:1;cursor:pointer}
+.medempty{font-size:12px;color:var(--muted);padding:2px 2px 8px}
+.medadd{border-top:0.5px solid var(--bd);margin-top:10px;padding-top:4px}
+.medbtn{width:100%;background:var(--slate);color:#fff;border:none;border-radius:9px;padding:9px;font-size:12px;font-weight:600;cursor:pointer}
 #modal{position:fixed;inset:0;background:rgba(15,23,42,0.55);display:none;align-items:flex-end;justify-content:center;z-index:40}
 #modal.show{display:flex}
 #modal .sheet{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto}
@@ -107,6 +144,7 @@ textarea{min-height:70px;resize:vertical}
     <button class="add" onclick="openAdd()">+ Add</button>
     <button class="menu" onclick="logout()" title="Log out">&#9099;</button>
   </header>
+  <div class="searchwrap"><input id="search" type="search" placeholder="Search animals\u2026" oninput="onSearch(this.value)" autocomplete="off"><button id="search-x" onclick="clearSearch()" style="display:none">&times;</button></div>
   <div class="units" id="units"></div>
   <div class="board" id="board"></div>
 </div>
@@ -132,6 +170,28 @@ textarea{min-height:70px;resize:vertical}
   <div id="m-slot-wrap"><label class="lbl">Slot</label><select id="m-slot"></select></div>
   <label class="lbl">Status</label>
   <div class="statseg" id="m-status"></div>
+  <div class="subhead" style="margin-top:15px">Adoption &amp; medical</div>
+  <div class="frow">
+    <div><label class="lbl" style="margin-top:0">Neutered</label><select id="m-neutered"><option>Unknown</option><option>Yes</option><option>No</option></select></div>
+    <div><label class="lbl" style="margin-top:0">Vaccinated</label><select id="m-vaccinated"><option>Unknown</option><option>Yes</option><option>No</option></select></div>
+  </div>
+  <label class="lbl">Microchip</label>
+  <input id="m-microchip" type="text" inputmode="numeric" placeholder="Chip number">
+  <label class="readyrow"><input type="checkbox" id="m-ready"> Ready to rehome</label>
+  <div class="subhead" style="margin-top:15px">Medical history</div>
+  <div id="m-med-list"></div>
+  <div class="medadd">
+    <div class="frow">
+      <div><label class="lbl" style="margin-top:0">Date</label><input id="med-date" type="date"></div>
+      <div><label class="lbl" style="margin-top:0">Type</label><select id="med-type"><option>Vaccination</option><option>Treatment</option><option>Medication</option><option>Parasite</option><option>Test</option><option>Vet visit</option><option>Weight</option><option>Other</option></select></div>
+    </div>
+    <label class="lbl">Detail</label>
+    <input id="med-detail" type="text" placeholder="e.g. DHPPi 1st, Bravecto, kennel cough">
+    <div class="frow">
+      <div><label class="lbl" style="margin-top:0">Next due (optional)</label><input id="med-due" type="date"></div>
+      <div style="display:flex;align-items:flex-end"><button type="button" class="medbtn" onclick="addMedEntry()">+ Add entry</button></div>
+    </div>
+  </div>
   <label class="lbl">Outcome</label>
   <div class="frow">
     <div><select id="m-outcome" onchange="onOutcomeChange()"><option value="">In care</option><option>Adopted</option><option>Reclaimed</option><option>Transferred</option><option>Returned to field</option><option>Died</option></select></div>
@@ -178,7 +238,7 @@ function stayDays(dstr,endStr){if(!dstr)return null;var d=new Date(dstr);if(isNa
 function stayPill(dstr,endStr){var n=stayDays(dstr,endStr);if(n==null)return"";var lbl=n===0?"Today":n+"d";return '<span class="staylbl'+(!endStr&&n>=30?" long":"")+'">'+lbl+'</span>';}
 function metaLine(parts){var p=parts.filter(function(x){return x&&(""+x).trim();});return p.length?'<div class="meta">'+esc(p.join(" \u00b7 "))+'</div>':"";}
 var sb=null,CURRENT=null;
-var S={animals:[],isoDogs:[],unit:"All",editing:null,photo:null,status:"Settling in"};
+var S={animals:[],isoDogs:[],unit:"All",editing:null,photo:null,status:"Settling in",q:"",med:[]};
 
 function initSupa(){if(!sb&&window.supabase)sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);return sb;}
 function esc(s){return(s==null?"":(""+s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
@@ -199,7 +259,7 @@ async function saveAnimal(){
   var name=document.getElementById("m-name").value.trim();if(!name){alert("Please enter a name.");return;}
   var unit=document.getElementById("m-unit").value;var slotSel=document.getElementById("m-slot");
   var slot=(unitSlots(unitDef(unit)))?slotSel.value:null;
-  var rec={name:name,species:document.getElementById("m-species").value||null,sex:document.getElementById("m-sex").value||null,age:document.getElementById("m-age").value.trim()||null,ref:document.getElementById("m-ref").value.trim()||null,intake_date:document.getElementById("m-intake").value||null,outcome:document.getElementById("m-outcome").value||null,outcome_date:document.getElementById("m-outcome").value?(document.getElementById("m-outcome-date").value||null):null,unit:unit,slot:slot||null,status:S.status,notes:document.getElementById("m-notes").value.trim(),photo:S.photo||null,updated_at:new Date().toISOString()};
+  var rec={name:name,species:document.getElementById("m-species").value||null,sex:document.getElementById("m-sex").value||null,age:document.getElementById("m-age").value.trim()||null,ref:document.getElementById("m-ref").value.trim()||null,intake_date:document.getElementById("m-intake").value||null,outcome:document.getElementById("m-outcome").value||null,outcome_date:document.getElementById("m-outcome").value?(document.getElementById("m-outcome-date").value||null):null,neutered:document.getElementById("m-neutered").value||null,vaccinated:document.getElementById("m-vaccinated").value||null,microchip:document.getElementById("m-microchip").value.trim()||null,ready:document.getElementById("m-ready").checked,medical:S.med,unit:unit,slot:slot||null,status:S.status,notes:document.getElementById("m-notes").value.trim(),photo:S.photo||null,updated_at:new Date().toISOString()};
   initSupa();
   try{if(S.editing){await sb.from("occupancy").update(rec).eq("id",S.editing);}else{rec.created_at=new Date().toISOString();await sb.from("occupancy").insert([rec]);}}
   catch(e){alert("Save failed — check your connection and try again.");console.warn(e);return;}
@@ -212,7 +272,15 @@ function unitCount(u){return u.external?S.isoDogs.length:occCount(u.name);}
 function tlPill(tl){var mp={Green:["#dcfce7","#166534"],Yellow:["#fef9c3","#854d0e"],Red:["#fee2e2","#991b1b"],Black:["#1e293b","#ffffff"]};var c=mp[tl]||["#f1f5f9","#475569"];return '<span class="st" style="background:'+c[0]+';color:'+c[1]+'">'+esc(tl||"\u2014")+'</span>';}
 function openIso(){window.open("https://nspca-longford.github.io/nspca-longford-dog-isolation/","_blank","noopener");}
 function isoCard(d){var ph=d.photo?'<img src="'+d.photo+'">':"\ud83d\udc36";var k=d.kennel?'<span class="slotlbl">'+esc(d.kennel)+'</span>':"";return '<div class="acard" onclick="openIso()"><div class="ph">'+ph+k+tlPill(d.tl)+stayPill(d.intake)+'</div><div class="bd"><div class="nm">'+esc(d.name)+'</div>'+metaLine(["Dog",d.breed])+'<div class="nt" style="color:#0d9488;font-weight:600">Isolation app \u2192</div></div></div>';}
-function occCard(a){var ph=a.photo?'<img src="'+a.photo+'">':'&#128062;';var sl=a.slot?'<span class="slotlbl">'+esc(a.slot)+'</span>':'';return '<div class="acard" onclick="openEdit('+a.id+')"><div class="ph">'+ph+sl+statusPill(a.status)+stayPill(a.intake_date)+'</div><div class="bd"><div class="nm">'+esc(a.name)+'</div>'+metaLine([a.species,sexShort(a.sex),a.age])+(a.notes?'<div class="nt">'+esc(a.notes)+'</div>':'')+'</div></div>';}
+function readyBadge(a){return a.ready?'<span class="readylbl">Ready</span>':"";}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function medDue(a){if(!Array.isArray(a.medical))return null;var t=todayStr();var s=new Date();s.setDate(s.getDate()+14);var ss=s.toISOString().slice(0,10);var over=false,soon=false;a.medical.forEach(function(m){if(m&&m.due){if(m.due<=t)over=true;else if(m.due<=ss)soon=true;}});return over?"over":soon?"soon":null;}
+function medLine(a){var d=medDue(a);if(d==="over")return '<div class="medflag over">\u26a0 Medical due</div>';if(d==="soon")return '<div class="medflag">Medical soon</div>';return"";}
+function renderMed(){var c=document.getElementById("m-med-list");if(!c)return;if(!S.med.length){c.innerHTML='<div class="medempty">No medical entries yet.</div>';return;}var t=todayStr();c.innerHTML=S.med.slice().sort(function(a,b){var x=a.date||"",y=b.date||"";return x<y?1:x>y?-1:0;}).map(function(m){var due=m.due?' <span class="meddue'+(m.due<=t?" over":"")+'">due '+fmtDate(m.due)+'</span>':"";return '<div class="medrow"><div class="medmain"><span class="medt">'+esc(m.type||"")+'</span> <span class="medd">'+esc(m.detail||"")+'</span>'+due+'<div class="meddate">'+fmtDate(m.date)+'</div></div><button type="button" class="medx" onclick="removeMedEntry('+m.id+')">&times;</button></div>';}).join("");}
+function addMedEntry(){var type=document.getElementById("med-type").value;var detail=document.getElementById("med-detail").value.trim();var date=document.getElementById("med-date").value||todayStr();var due=document.getElementById("med-due").value||null;if(!detail&&!type)return;S.med.push({id:Date.now(),date:date,type:type,detail:detail,due:due});document.getElementById("med-detail").value="";document.getElementById("med-due").value="";document.getElementById("med-date").value=todayStr();renderMed();}
+function removeMedEntry(id){S.med=S.med.filter(function(m){return m.id!==id;});renderMed();}
+function flagsLine(a){var f=[];if(a.neutered==="Yes")f.push("Neutered");if(a.vaccinated==="Yes")f.push("Vax");if(a.microchip)f.push("Chipped");return f.length?'<div class="flags">'+f.join(" \u00b7 ")+'</div>':"";}
+function occCard(a){var ph=a.photo?'<img src="'+a.photo+'">':'&#128062;';var sl=a.slot?'<span class="slotlbl">'+esc(a.slot)+'</span>':'';return '<div class="acard" onclick="openEdit('+a.id+')"><div class="ph">'+ph+sl+statusPill(a.status)+stayPill(a.intake_date)+readyBadge(a)+'</div><div class="bd"><div class="nm">'+esc(a.name)+'</div>'+metaLine([a.species,sexShort(a.sex),a.age])+flagsLine(a)+medLine(a)+(a.notes?'<div class="nt">'+esc(a.notes)+'</div>':'')+'</div></div>';}
 function outcomeCard(a){var ph=a.photo?'<img src="'+a.photo+'">':'&#128062;';return '<div class="acard out" onclick="openEdit('+a.id+')"><div class="ph">'+ph+outcomePill(a.outcome)+stayPill(a.intake_date,a.outcome_date)+'</div><div class="bd"><div class="nm">'+esc(a.name)+'</div>'+metaLine([a.species,a.outcome_date?fmtDate(a.outcome_date):"",a.unit])+'</div></div>';}
 function slotGrid(unitName,slotList){
   return '<div class="grid">'+slotList.map(function(sl){
@@ -220,6 +288,60 @@ function slotGrid(unitName,slotList){
     if(a)return occCard(a);
     return '<div class="slot empty" onclick="openAdd(\''+unitName.replace(/'/g,"\\'")+'\',\''+sl.replace(/'/g,"\\'")+'\')"><div class="slotlbl">'+esc(sl)+'</div><div class="et">Empty &middot; + Add</div></div>';
   }).join("")+'</div>';
+}
+function slotUnits(){return UNITS.filter(function(u){return !u.external&&unitSlots(u);});}
+function matchA(a,q){return [a.name,a.species,a.ref,a.unit,a.slot,a.status,a.outcome,a.age,a.sex,a.microchip,a.notes,(Array.isArray(a.medical)?a.medical.map(function(m){return (m.type||"")+" "+(m.detail||"");}).join(" "):"")].some(function(f){return f&&(""+f).toLowerCase().indexOf(q)>=0;});}
+function searchHtml(q){
+  var inc=S.animals.filter(function(a){return !a.outcome&&matchA(a,q);});
+  var out=S.animals.filter(function(a){return a.outcome&&matchA(a,q);});
+  var isom=S.isoDogs.filter(function(d){return [d.name,d.breed].some(function(f){return f&&(""+f).toLowerCase().indexOf(q)>=0;});});
+  var total=inc.length+out.length+isom.length;
+  var h='<div class="dhead" style="margin-bottom:11px">'+total+' result'+(total===1?'':'s')+' for \u201c'+esc(q)+'\u201d</div>';
+  if(!total)return h+'<div class="empty">No animals match.</div>';
+  if(inc.length)h+='<div class="dsec"><div class="dhead">On the board</div><div class="grid">'+inc.map(occCard).join("")+'</div></div>';
+  if(isom.length)h+='<div class="dsec"><div class="dhead">In isolation</div><div class="grid">'+isom.map(isoCard).join("")+'</div></div>';
+  if(out.length)h+='<div class="dsec"><div class="dhead">Outcomes</div><div class="grid">'+out.map(outcomeCard).join("")+'</div></div>';
+  return h;
+}
+function colorBadge(map,key){var s=map[key]||{bg:"#f1f5f9",fg:"#475569"};return '<span style="background:'+s.bg+';color:'+s.fg+';font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap">'+esc(key)+'</span>';}
+function dashboardHtml(){
+  var inCare=S.animals.filter(function(a){return !a.outcome;});
+  var iso=S.isoDogs.length;
+  var totalCap=0,totalOcc=0;slotUnits().forEach(function(u){totalCap+=capacity(u);totalOcc+=occCount(u.name);});
+  var pct=totalCap?Math.round(totalOcc/totalCap*100):0;
+  var longs=inCare.filter(function(a){var n=stayDays(a.intake_date);return n!=null&&n>=30;});
+  var now=new Date(),since=new Date(now.getFullYear(),now.getMonth(),now.getDate()-30);
+  var recentOut=S.animals.filter(function(a){if(!a.outcome||!a.outcome_date)return false;var d=new Date(a.outcome_date);return !isNaN(d.getTime())&&d>=since;});
+  var h='<div class="kpis">';
+  h+='<div class="kpi"><div class="v">'+inCare.length+'</div><div class="l">In care</div>'+(iso?'<div class="sub">+'+iso+' in isolation</div>':'<div class="sub">animals on the board</div>')+'</div>';
+  h+='<div class="kpi"><div class="v">'+totalOcc+'/'+totalCap+'</div><div class="l">Slots used</div><div class="sub">'+pct+'% full</div></div>';
+  h+='<div class="kpi"><div class="v">'+longs.length+'</div><div class="l">Long stays</div><div class="sub">30+ days</div></div>';
+  h+='<div class="kpi"><div class="v">'+recentOut.length+'</div><div class="l">Outcomes</div><div class="sub">last 30 days</div></div>';
+  h+='</div>';
+  var stc=Object.keys(STATUSES).map(function(st){var n=inCare.filter(function(a){return a.status===st;}).length;if(!n)return"";var s=STATUSES[st];return '<span class="chip" style="background:'+s.bg+';color:'+s.fg+';border-color:transparent">'+esc(st)+' <b>'+n+'</b></span>';}).filter(Boolean).join("");
+  if(stc)h+='<div class="dsec"><div class="dhead">By status</div><div class="chips">'+stc+'</div></div>';
+  var spMap={};inCare.forEach(function(a){var k=a.species||"Unspecified";spMap[k]=(spMap[k]||0)+1;});
+  var spKeys=Object.keys(spMap).sort(function(a,b){return spMap[b]-spMap[a];});
+  if(spKeys.length){h+='<div class="dsec"><div class="dhead">By type</div><div class="chips">'+spKeys.map(function(k){return '<span class="chip">'+esc(k)+' <b>'+spMap[k]+'</b></span>';}).join("")+'</div></div>';}
+  var readyN=inCare.filter(function(a){return a.ready;}).length;
+  var needN=inCare.filter(function(a){return a.neutered==="No";}).length;
+  var needV=inCare.filter(function(a){return a.vaccinated==="No";}).length;
+  var noChip=inCare.filter(function(a){return !a.microchip;}).length;
+  var rc=[];
+  if(readyN)rc.push('<span class="chip" style="background:#dcfce7;color:#166534;border-color:transparent">Ready to rehome <b>'+readyN+'</b></span>');
+  if(needN)rc.push('<span class="chip">Needs neuter <b>'+needN+'</b></span>');
+  if(needV)rc.push('<span class="chip">Needs vaccination <b>'+needV+'</b></span>');
+  if(noChip)rc.push('<span class="chip">No microchip <b>'+noChip+'</b></span>');
+  if(rc.length)h+='<div class="dsec"><div class="dhead">Adoption readiness</div><div class="chips">'+rc.join("")+'</div></div>';
+  var attn=inCare.filter(function(a){var n=stayDays(a.intake_date);return a.status==="Medical"||medDue(a)==="over"||(n!=null&&n>=30);}).sort(function(a,b){return (stayDays(b.intake_date)||0)-(stayDays(a.intake_date)||0);});
+  h+='<div class="dsec"><div class="dhead">Needs attention</div>';
+  h+=attn.length?attn.map(function(a){var n=stayDays(a.intake_date);var b='';if(a.status==="Medical")b+='<span class="badge med">Medical</span> ';if(medDue(a)==="over")b+='<span class="badge med">Med due</span> ';if(n!=null&&n>=30)b+='<span class="badge long">'+n+'d</span>';var w=esc(a.unit||"")+(a.slot?' \u00b7 '+esc(a.slot):'');return '<div class="arow" onclick="openEdit('+a.id+')"><span class="an">'+esc(a.name)+'</span><span class="aw">'+w+'</span>'+b+'</div>';}).join(""):'<div class="empty">Nothing flagged \u2014 no medical cases, overdue treatments or long stays.</div>';
+  h+='</div>';
+  h+='<div class="dsec"><div class="dhead">Capacity by unit</div>';
+  h+=UNITS.map(function(u){var cap=capacity(u),oc=unitCount(u);if(cap){var p=Math.round(oc/cap*100);return '<div class="ov" onclick="setUnit(\''+u.name.replace(/'/g,"\\'")+'\')"><div class="ovtop"><span class="ovn">'+esc(u.name)+'</span><span class="ovc">'+oc+' / '+cap+'</span></div><div class="bar"><div style="width:'+p+'%"></div></div></div>';}return '<div class="ov" onclick="setUnit(\''+u.name.replace(/'/g,"\\'")+'\')"><div class="ovtop"><span class="ovn">'+esc(u.name)+'</span><span class="ovc">'+oc+' in</span></div></div>';}).join("");
+  h+='</div>';
+  if(recentOut.length){var ro=recentOut.slice().sort(function(a,b){var x=a.outcome_date||"",y=b.outcome_date||"";return x<y?1:x>y?-1:0;}).slice(0,5);h+='<div class="dsec"><div class="dhead">Recent outcomes</div>'+ro.map(function(a){return '<div class="arow" onclick="openEdit('+a.id+')"><span class="an">'+esc(a.name)+'</span><span class="aw">'+fmtDate(a.outcome_date)+'</span>'+colorBadge(OUTCOMES,a.outcome)+'</div>';}).join("")+'</div>';}
+  return h;
 }
 function render(){
   tick();
@@ -229,12 +351,10 @@ function render(){
   document.getElementById("units").innerHTML=pills;
 
   var board=document.getElementById("board"),html="";
+  var q=(S.q||"").trim().toLowerCase();
+  if(q){board.innerHTML=searchHtml(q);return;}
   if(S.unit==="All"){
-    html=UNITS.map(function(u){
-      var cap=capacity(u),oc=unitCount(u);
-      if(cap){var pct=Math.round(oc/cap*100);return '<div class="ov" onclick="setUnit(\''+u.name.replace(/'/g,"\\'")+'\')"><div class="ovtop"><span class="ovn">'+esc(u.name)+'</span><span class="ovc">'+oc+' / '+cap+'</span></div><div class="bar"><div style="width:'+pct+'%"></div></div></div>';}
-      return '<div class="ov" onclick="setUnit(\''+u.name.replace(/'/g,"\\'")+'\')"><div class="ovtop"><span class="ovn">'+esc(u.name)+'</span><span class="ovc">'+oc+' in</span></div></div>';
-    }).join("");
+    html=dashboardHtml();
   }else if(S.unit==="__outcomes"){
     var outs=S.animals.filter(function(a){return a.outcome;}).slice().sort(function(a,b){var x=a.outcome_date||"",y=b.outcome_date||"";return x<y?1:x>y?-1:0;});
     html='<div style="background:#f1f5f9;color:#475569;border-radius:11px;padding:10px 13px;font-size:11.5px;margin-bottom:12px">Animals that have left the shelter \u2014 kept for the record. Tap one to view or reopen (set Outcome back to <strong>In care</strong>).</div>';
@@ -256,7 +376,9 @@ function render(){
   }
   board.innerHTML=html;
 }
-function setUnit(u){S.unit=u;render();}
+function setUnit(u){S.unit=u;if(S.q){S.q="";var si=document.getElementById("search");if(si)si.value="";var sx=document.getElementById("search-x");if(sx)sx.style.display="none";}render();}
+function onSearch(v){S.q=v;document.getElementById("search-x").style.display=v?"block":"none";render();}
+function clearSearch(){S.q="";document.getElementById("search").value="";document.getElementById("search-x").style.display="none";render();}
 
 function buildStatusSeg(){document.getElementById("m-status").innerHTML=Object.keys(STATUSES).map(function(st){var on=st===S.status;var s=STATUSES[st];return '<button type="button" onclick="setStatus(\''+st.replace(/'/g,"\\'")+'\')" style="'+(on?'background:'+s.bg+';color:'+s.fg+';border-color:'+s.fg:'')+'">'+esc(st)+'</button>';}).join("");}
 function setStatus(st){S.status=st;buildStatusSeg();}
@@ -282,6 +404,8 @@ function openAdd(unit,slot){
   document.getElementById("m-ref").value="";
   document.getElementById("m-intake").value=new Date().toISOString().slice(0,10);
   document.getElementById("m-outcome").value="";document.getElementById("m-outcome-date").value="";
+  document.getElementById("m-neutered").value="Unknown";document.getElementById("m-vaccinated").value="Unknown";document.getElementById("m-microchip").value="";document.getElementById("m-ready").checked=false;
+  S.med=[];document.getElementById("med-date").value=new Date().toISOString().slice(0,10);renderMed();
   fillUnitSelect(u);populateSlots(u,slot||"");
   document.getElementById("m-del").style.display="none";
   renderPhoto();buildStatusSeg();document.getElementById("modal").classList.add("show");
@@ -297,6 +421,8 @@ function openEdit(id){
   document.getElementById("m-ref").value=a.ref||"";
   document.getElementById("m-intake").value=a.intake_date||"";
   document.getElementById("m-outcome").value=a.outcome||"";document.getElementById("m-outcome-date").value=a.outcome_date||"";
+  document.getElementById("m-neutered").value=a.neutered||"Unknown";document.getElementById("m-vaccinated").value=a.vaccinated||"Unknown";document.getElementById("m-microchip").value=a.microchip||"";document.getElementById("m-ready").checked=!!a.ready;
+  S.med=Array.isArray(a.medical)?a.medical.slice():[];document.getElementById("med-date").value=new Date().toISOString().slice(0,10);renderMed();
   fillUnitSelect(a.unit);populateSlots(a.unit,a.slot||"");
   document.getElementById("m-del").style.display=(CURRENT&&CURRENT.role!=="staff")?"block":"none";
   renderPhoto();buildStatusSeg();document.getElementById("modal").classList.add("show");
