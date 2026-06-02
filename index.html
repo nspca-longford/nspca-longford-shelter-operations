@@ -47,6 +47,11 @@ header .menu{background:var(--slate2);color:#cbd5e1;border:none;border-radius:9p
 .acard .bd{padding:9px 11px}
 .acard .nm{font-size:14px;font-weight:700}
 .acard .nt{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.acard .meta{font-size:11px;color:var(--sec);font-weight:600;margin-top:2px}
+.acard .staylbl{position:absolute;bottom:7px;left:7px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(15,23,42,0.78);color:#fff}
+.acard .staylbl.long{background:#f59e0b;color:#3b2500}
+.frow{display:flex;gap:11px}.frow>div{flex:1;min-width:0}
+.acard.out img{filter:grayscale(0.35)}.acard.out{opacity:0.94}
 .slot.empty{border:1px dashed var(--bd);border-radius:14px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70px;cursor:pointer;color:var(--muted)}
 .slot.empty .slotlbl{font-size:10px;font-weight:700;color:var(--sec);margin-bottom:3px}
 .slot.empty .et{font-size:11px}
@@ -110,11 +115,28 @@ textarea{min-height:70px;resize:vertical}
   <h2 id="m-title">Add animal</h2>
   <label class="lbl">Name</label>
   <input id="m-name" type="text" placeholder="e.g. Bella">
+  <div class="frow">
+    <div><label class="lbl">Type</label>
+      <select id="m-species"><option value="">&mdash;</option><option>Dog</option><option>Cat</option><option>Rabbit</option><option>Guinea pig</option><option>Other small mammal</option><option>Horse/Pony</option><option>Bird</option><option>Other</option></select></div>
+    <div><label class="lbl">Sex</label>
+      <select id="m-sex"><option>Unknown</option><option>Male</option><option>Female</option></select></div>
+  </div>
+  <div class="frow">
+    <div><label class="lbl">Age</label><input id="m-age" type="text" placeholder="e.g. ~2 yrs"></div>
+    <div><label class="lbl">Ref</label><input id="m-ref" type="text" placeholder="ID / ref"></div>
+  </div>
+  <label class="lbl">Intake date</label>
+  <input id="m-intake" type="date">
   <label class="lbl">Unit</label>
   <select id="m-unit" onchange="onUnitChange()"></select>
   <div id="m-slot-wrap"><label class="lbl">Slot</label><select id="m-slot"></select></div>
   <label class="lbl">Status</label>
   <div class="statseg" id="m-status"></div>
+  <label class="lbl">Outcome</label>
+  <div class="frow">
+    <div><select id="m-outcome" onchange="onOutcomeChange()"><option value="">In care</option><option>Adopted</option><option>Reclaimed</option><option>Transferred</option><option>Returned to field</option><option>Died</option></select></div>
+    <div><input id="m-outcome-date" type="date"></div>
+  </div>
   <label class="lbl">Photo</label>
   <div class="photo-row">
     <img id="m-photo-img" style="display:none">
@@ -146,6 +168,15 @@ var UNITS=[
  {name:"Small Mammals",free:true}
 ];
 var STATUSES={"Settling in":{bg:"#fef9c3",fg:"#854d0e"},"Available":{bg:"#dcfce7",fg:"#166534"},"Reserved":{bg:"#dbeafe",fg:"#1e40af"},"On hold":{bg:"#f1f5f9",fg:"#475569"},"Medical":{bg:"#fee2e2",fg:"#991b1b"}};
+function defaultSpecies(name){var m={Kennels:"Dog",Quiet:"Dog",Cattery:"Cat","Cattery Iso":"Cat",Stables:"Horse/Pony","Small Mammals":"Rabbit"};return m[name]||"";}
+var OUTCOMES={"Adopted":{bg:"#dcfce7",fg:"#166534"},"Reclaimed":{bg:"#dbeafe",fg:"#1e40af"},"Transferred":{bg:"#e0e7ff",fg:"#3730a3"},"Returned to field":{bg:"#f1f5f9",fg:"#475569"},"Died":{bg:"#1e293b",fg:"#ffffff"}};
+function outcomeCount(){return S.animals.filter(function(a){return a.outcome;}).length;}
+function outcomePill(o){var s=OUTCOMES[o]||{bg:"#f1f5f9",fg:"#475569"};return '<span class="st" style="background:'+s.bg+';color:'+s.fg+'">'+esc(o)+'</span>';}
+function fmtDate(d){if(!d)return"";var x=new Date(d);if(isNaN(x.getTime()))return esc(d);return x.toLocaleDateString("en-IE",{day:"numeric",month:"short",year:"numeric"});}
+function sexShort(s){return s==="Male"?"M":s==="Female"?"F":"";}
+function stayDays(dstr,endStr){if(!dstr)return null;var d=new Date(dstr);if(isNaN(d.getTime()))return null;var t=endStr?new Date(endStr):new Date();if(isNaN(t.getTime()))t=new Date();var days=Math.round((Date.UTC(t.getFullYear(),t.getMonth(),t.getDate())-Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);return days<0?0:days;}
+function stayPill(dstr,endStr){var n=stayDays(dstr,endStr);if(n==null)return"";var lbl=n===0?"Today":n+"d";return '<span class="staylbl'+(!endStr&&n>=30?" long":"")+'">'+lbl+'</span>';}
+function metaLine(parts){var p=parts.filter(function(x){return x&&(""+x).trim();});return p.length?'<div class="meta">'+esc(p.join(" \u00b7 "))+'</div>':"";}
 var sb=null,CURRENT=null;
 var S={animals:[],isoDogs:[],unit:"All",editing:null,photo:null,status:"Settling in"};
 
@@ -154,7 +185,7 @@ function esc(s){return(s==null?"":(""+s)).replace(/&/g,"&amp;").replace(/</g,"&l
 function unitDef(n){return UNITS.find(function(u){return u.name===n;});}
 function unitSlots(u){if(!u)return null;if(u.slots)return u.slots;if(u.groups)return u.groups.reduce(function(a,g){return a.concat(g.slots);},[]);return null;}
 function capacity(u){var s=unitSlots(u);return s?s.length:null;}
-function occCount(name){return S.animals.filter(function(a){return a.unit===name;}).length;}
+function occCount(name){return S.animals.filter(function(a){return a.unit===name&&!a.outcome;}).length;}
 
 function toggleCode(){var c=document.getElementById("code");c.type=c.type==="password"?"text":"password";}
 function doLogin(){var v=document.getElementById("code").value.trim();var u=USERS.find(function(x){return x.code.toLowerCase()===v.toLowerCase();});if(!u){document.getElementById("login-err").style.display="block";return;}CURRENT=u;try{localStorage.setItem("nspca-occ-user",JSON.stringify(u));}catch(e){}showApp();}
@@ -162,13 +193,13 @@ function logout(){if(!confirm("Log out?"))return;try{localStorage.removeItem("ns
 function showApp(){document.getElementById("login").style.display="none";document.getElementById("app").style.display="block";load();}
 
 async function load(){initSupa();if(!sb){render();return;}try{var res=await sb.from("occupancy").select("*").order("name");if(res.data)S.animals=res.data;}catch(e){console.warn("load failed",e);}
-  try{var r2=await sb.from("dogs").select("*");S.isoDogs=(r2.data||[]).map(function(row){var st=null;try{st=typeof row.data==="string"?JSON.parse(row.data):row.data;}catch(e){}return{id:row.id,name:row.name||"Unknown",tl:row.traffic_light,photo:st&&st.dog?st.dog.photo:null,kennel:st&&st.dog?st.dog.kennel:"",st:st};}).filter(function(d){var o=d.st&&d.st.fin?d.st.fin.outcome:"";return !o||(""+o).indexOf("Active")>=0||o==="Finished Isolation";});}catch(e){console.warn("iso load failed",e);}
+  try{var r2=await sb.from("dogs").select("*");S.isoDogs=(r2.data||[]).map(function(row){var st=null;try{st=typeof row.data==="string"?JSON.parse(row.data):row.data;}catch(e){}return{id:row.id,name:row.name||"Unknown",tl:row.traffic_light,photo:st&&st.dog?st.dog.photo:null,kennel:st&&st.dog?st.dog.kennel:"",breed:row.breed||(st&&st.dog?st.dog.breed:""),intake:row.intake_date||(st&&st.dog?st.dog.intake_date:null),st:st};}).filter(function(d){var o=d.st&&d.st.fin?d.st.fin.outcome:"";return !o||(""+o).indexOf("Active")>=0||o==="Finished Isolation";});}catch(e){console.warn("iso load failed",e);}
   render();}
 async function saveAnimal(){
   var name=document.getElementById("m-name").value.trim();if(!name){alert("Please enter a name.");return;}
   var unit=document.getElementById("m-unit").value;var slotSel=document.getElementById("m-slot");
   var slot=(unitSlots(unitDef(unit)))?slotSel.value:null;
-  var rec={name:name,unit:unit,slot:slot||null,status:S.status,notes:document.getElementById("m-notes").value.trim(),photo:S.photo||null,updated_at:new Date().toISOString()};
+  var rec={name:name,species:document.getElementById("m-species").value||null,sex:document.getElementById("m-sex").value||null,age:document.getElementById("m-age").value.trim()||null,ref:document.getElementById("m-ref").value.trim()||null,intake_date:document.getElementById("m-intake").value||null,outcome:document.getElementById("m-outcome").value||null,outcome_date:document.getElementById("m-outcome").value?(document.getElementById("m-outcome-date").value||null):null,unit:unit,slot:slot||null,status:S.status,notes:document.getElementById("m-notes").value.trim(),photo:S.photo||null,updated_at:new Date().toISOString()};
   initSupa();
   try{if(S.editing){await sb.from("occupancy").update(rec).eq("id",S.editing);}else{rec.created_at=new Date().toISOString();await sb.from("occupancy").insert([rec]);}}
   catch(e){alert("Save failed — check your connection and try again.");console.warn(e);return;}
@@ -180,11 +211,12 @@ function statusPill(st){var s=STATUSES[st]||{bg:"#f1f5f9",fg:"#475569"};return '
 function unitCount(u){return u.external?S.isoDogs.length:occCount(u.name);}
 function tlPill(tl){var mp={Green:["#dcfce7","#166534"],Yellow:["#fef9c3","#854d0e"],Red:["#fee2e2","#991b1b"],Black:["#1e293b","#ffffff"]};var c=mp[tl]||["#f1f5f9","#475569"];return '<span class="st" style="background:'+c[0]+';color:'+c[1]+'">'+esc(tl||"\u2014")+'</span>';}
 function openIso(){window.open("https://nspca-longford.github.io/nspca-longford-dog-isolation/","_blank","noopener");}
-function isoCard(d){var ph=d.photo?'<img src="'+d.photo+'">':"\ud83d\udc36";var k=d.kennel?'<span class="slotlbl">'+esc(d.kennel)+'</span>':"";return '<div class="acard" onclick="openIso()"><div class="ph">'+ph+k+tlPill(d.tl)+'</div><div class="bd"><div class="nm">'+esc(d.name)+'</div><div class="nt" style="color:#0d9488;font-weight:600">Isolation app \u2192</div></div></div>';}
-function occCard(a){var ph=a.photo?'<img src="'+a.photo+'">':'&#128062;';var sl=a.slot?'<span class="slotlbl">'+esc(a.slot)+'</span>':'';return '<div class="acard" onclick="openEdit('+a.id+')"><div class="ph">'+ph+sl+statusPill(a.status)+'</div><div class="bd"><div class="nm">'+esc(a.name)+'</div>'+(a.notes?'<div class="nt">'+esc(a.notes)+'</div>':'')+'</div></div>';}
+function isoCard(d){var ph=d.photo?'<img src="'+d.photo+'">':"\ud83d\udc36";var k=d.kennel?'<span class="slotlbl">'+esc(d.kennel)+'</span>':"";return '<div class="acard" onclick="openIso()"><div class="ph">'+ph+k+tlPill(d.tl)+stayPill(d.intake)+'</div><div class="bd"><div class="nm">'+esc(d.name)+'</div>'+metaLine(["Dog",d.breed])+'<div class="nt" style="color:#0d9488;font-weight:600">Isolation app \u2192</div></div></div>';}
+function occCard(a){var ph=a.photo?'<img src="'+a.photo+'">':'&#128062;';var sl=a.slot?'<span class="slotlbl">'+esc(a.slot)+'</span>':'';return '<div class="acard" onclick="openEdit('+a.id+')"><div class="ph">'+ph+sl+statusPill(a.status)+stayPill(a.intake_date)+'</div><div class="bd"><div class="nm">'+esc(a.name)+'</div>'+metaLine([a.species,sexShort(a.sex),a.age])+(a.notes?'<div class="nt">'+esc(a.notes)+'</div>':'')+'</div></div>';}
+function outcomeCard(a){var ph=a.photo?'<img src="'+a.photo+'">':'&#128062;';return '<div class="acard out" onclick="openEdit('+a.id+')"><div class="ph">'+ph+outcomePill(a.outcome)+stayPill(a.intake_date,a.outcome_date)+'</div><div class="bd"><div class="nm">'+esc(a.name)+'</div>'+metaLine([a.species,a.outcome_date?fmtDate(a.outcome_date):"",a.unit])+'</div></div>';}
 function slotGrid(unitName,slotList){
   return '<div class="grid">'+slotList.map(function(sl){
-    var a=S.animals.find(function(x){return x.unit===unitName&&x.slot===sl;});
+    var a=S.animals.find(function(x){return x.unit===unitName&&x.slot===sl&&!x.outcome;});
     if(a)return occCard(a);
     return '<div class="slot empty" onclick="openAdd(\''+unitName.replace(/'/g,"\\'")+'\',\''+sl.replace(/'/g,"\\'")+'\')"><div class="slotlbl">'+esc(sl)+'</div><div class="et">Empty &middot; + Add</div></div>';
   }).join("")+'</div>';
@@ -193,6 +225,7 @@ function render(){
   tick();
   var pills='<button class="unit '+(S.unit==="All"?"on":"")+'" onclick="setUnit(\'All\')">Overview</button>';
   pills+=UNITS.map(function(u){var cap=capacity(u);var oc=unitCount(u);var ct=cap?oc+"/"+cap:oc;return '<button class="unit '+(S.unit===u.name?"on":"")+'" onclick="setUnit(\''+u.name.replace(/'/g,"\\'")+'\')">'+esc(u.name)+'<span class="ct">'+ct+'</span></button>';}).join("");
+  pills+='<button class="unit '+(S.unit==="__outcomes"?"on":"")+'" onclick="setUnit(\'__outcomes\')">Outcomes<span class="ct">'+outcomeCount()+'</span></button>';
   document.getElementById("units").innerHTML=pills;
 
   var board=document.getElementById("board"),html="";
@@ -202,17 +235,21 @@ function render(){
       if(cap){var pct=Math.round(oc/cap*100);return '<div class="ov" onclick="setUnit(\''+u.name.replace(/'/g,"\\'")+'\')"><div class="ovtop"><span class="ovn">'+esc(u.name)+'</span><span class="ovc">'+oc+' / '+cap+'</span></div><div class="bar"><div style="width:'+pct+'%"></div></div></div>';}
       return '<div class="ov" onclick="setUnit(\''+u.name.replace(/'/g,"\\'")+'\')"><div class="ovtop"><span class="ovn">'+esc(u.name)+'</span><span class="ovc">'+oc+' in</span></div></div>';
     }).join("");
+  }else if(S.unit==="__outcomes"){
+    var outs=S.animals.filter(function(a){return a.outcome;}).slice().sort(function(a,b){var x=a.outcome_date||"",y=b.outcome_date||"";return x<y?1:x>y?-1:0;});
+    html='<div style="background:#f1f5f9;color:#475569;border-radius:11px;padding:10px 13px;font-size:11.5px;margin-bottom:12px">Animals that have left the shelter \u2014 kept for the record. Tap one to view or reopen (set Outcome back to <strong>In care</strong>).</div>';
+    html+=outs.length?('<div class="grid">'+outs.map(outcomeCard).join("")+'</div>'):'<div class="empty">No outcomes recorded yet.</div>';
   }else{
     var u=unitDef(S.unit);
     if(u.external){
       html='<div style="background:#ccfbf1;color:#115e59;border-radius:11px;padding:10px 13px;font-size:11.5px;margin-bottom:12px">These dogs are in the <strong>Dog Isolation app</strong> \u2014 shown here read-only. Tap one to open it.</div>';
       html+=S.isoDogs.length?('<div class="grid">'+S.isoDogs.map(isoCard).join("")+'</div>'):'<div class="empty">No dogs currently in isolation.</div>';
     }else if(u.free){
-      var list=S.animals.filter(function(a){return a.unit===u.name;});
+      var list=S.animals.filter(function(a){return a.unit===u.name&&!a.outcome;});
       html='<button class="addfree" onclick="openAdd(\''+u.name.replace(/'/g,"\\'")+'\',null)">+ Add to '+esc(u.name)+'</button>';
       html+=list.length?('<div class="grid">'+list.map(occCard).join("")+'</div>'):'<div class="empty">No animals in '+esc(u.name)+' yet.</div>';
     }else if(u.groups){
-      html=u.groups.map(function(g){return '<div class="ugroup"><div class="subhead">'+esc(g.label)+' &middot; '+g.slots.filter(function(sl){return S.animals.some(function(a){return a.unit===u.name&&a.slot===sl;});}).length+'/'+g.slots.length+'</div>'+slotGrid(u.name,g.slots)+'</div>';}).join("");
+      html=u.groups.map(function(g){return '<div class="ugroup"><div class="subhead">'+esc(g.label)+' &middot; '+g.slots.filter(function(sl){return S.animals.some(function(a){return a.unit===u.name&&a.slot===sl&&!a.outcome;});}).length+'/'+g.slots.length+'</div>'+slotGrid(u.name,g.slots)+'</div>';}).join("");
     }else{
       html='<div class="ugroup"><div class="uhead"><span>'+esc(u.name)+'</span><span class="cap">'+occCount(u.name)+' / '+u.slots.length+' full</span></div>'+slotGrid(u.name,u.slots)+'</div>';
     }
@@ -231,13 +268,20 @@ function populateSlots(unitName,current){
   var taken={};S.animals.forEach(function(a){if(a.unit===unitName&&a.slot&&a.id!==S.editing)taken[a.slot]=true;});
   sel.innerHTML='<option value="">— choose slot —</option>'+sl.map(function(s){var t=taken[s];return '<option value="'+esc(s)+'"'+(s===current?" selected":"")+(t?" disabled":"")+'>'+esc(s)+(t?" (occupied)":"")+'</option>';}).join("");
 }
-function onUnitChange(){populateSlots(document.getElementById("m-unit").value,"");}
+function onUnitChange(){var u=document.getElementById("m-unit").value;populateSlots(u,"");var sp=document.getElementById("m-species");if(!sp.value)sp.value=defaultSpecies(u);}
+function onOutcomeChange(){var o=document.getElementById("m-outcome").value;var d=document.getElementById("m-outcome-date");if(o&&!d.value)d.value=new Date().toISOString().slice(0,10);if(!o)d.value="";}
 function fillUnitSelect(selected){document.getElementById("m-unit").innerHTML=UNITS.filter(function(u){return !u.external;}).map(function(u){return '<option'+(u.name===selected?" selected":"")+'>'+esc(u.name)+'</option>';}).join("");}
 function openAdd(unit,slot){
   S.editing=null;S.photo=null;S.status="Settling in";
   document.getElementById("m-title").textContent="Add animal";
   document.getElementById("m-name").value="";document.getElementById("m-notes").value="";
   var u=unit||((S.unit!=="All"&&!unitDef(S.unit).external)?S.unit:UNITS.filter(function(x){return !x.external;})[0].name);
+  document.getElementById("m-species").value=defaultSpecies(u);
+  document.getElementById("m-sex").value="Unknown";
+  document.getElementById("m-age").value="";
+  document.getElementById("m-ref").value="";
+  document.getElementById("m-intake").value=new Date().toISOString().slice(0,10);
+  document.getElementById("m-outcome").value="";document.getElementById("m-outcome-date").value="";
   fillUnitSelect(u);populateSlots(u,slot||"");
   document.getElementById("m-del").style.display="none";
   renderPhoto();buildStatusSeg();document.getElementById("modal").classList.add("show");
@@ -247,6 +291,12 @@ function openEdit(id){
   S.editing=id;S.photo=a.photo||null;S.status=a.status||"Settling in";
   document.getElementById("m-title").textContent="Edit animal";
   document.getElementById("m-name").value=a.name||"";document.getElementById("m-notes").value=a.notes||"";
+  document.getElementById("m-species").value=a.species||"";
+  document.getElementById("m-sex").value=a.sex||"Unknown";
+  document.getElementById("m-age").value=a.age||"";
+  document.getElementById("m-ref").value=a.ref||"";
+  document.getElementById("m-intake").value=a.intake_date||"";
+  document.getElementById("m-outcome").value=a.outcome||"";document.getElementById("m-outcome-date").value=a.outcome_date||"";
   fillUnitSelect(a.unit);populateSlots(a.unit,a.slot||"");
   document.getElementById("m-del").style.display=(CURRENT&&CURRENT.role!=="staff")?"block":"none";
   renderPhoto();buildStatusSeg();document.getElementById("modal").classList.add("show");
